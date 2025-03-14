@@ -1,0 +1,46 @@
+function $push(l %v) {
+@start
+    %top =l loadl $sp            # Load the stack pointer
+    storel %v, %top              # Store the value
+    %top =l add %top, 8          # Increment the stack pointer
+    storel %top, $sp             # Store the new stack pointer
+    ret
+}
+
+function l $pop() {
+@start
+    %top =l loadl $sp            # Load the stack pointer
+    %top =l sub %top, 8          # Decrement the stack pointer
+    storel %top, $sp             # Store the new stack pointer
+    %v =l loadl %top             # Load the value
+    ret %v
+}
+
+function l $peek() {
+@start
+    %top =l loadl $sp            # Load the stack pointer
+    %top =l sub %top, 8          # Decrement the stack pointer
+    %v =l loadl %top             # Load the value
+    ret %v
+}
+
+export function w $main() {
+@start
+    call $push(l 420)        # Push 420
+    call $push(l 69)         # Push 69
+
+    %top =l call $peek()     # Peek 69
+    call $printf(l $stacktoplog, ..., l %top)
+
+    %top =l call $pop()      # Pop 69
+    call $printf(l $stacktoplog, ..., l %top)
+
+    %top =l call $pop()      # Pop 420
+    call $printf(l $stacktoplog, ..., l %top)
+
+    ret 0
+}
+
+data $stack = { z 8000 }         # 8000 bytes of stack space (1000 64-bit values)
+data $sp = { l $stack }          # Stack pointer
+data $stacktoplog = { b "top of the stack: %zu\n", b 0 }
